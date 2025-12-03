@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi RPH SMP MG01</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.1/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="app-title">
+                <img src="logo_sekolah1.jpg.png" alt="Logo SMP Mangunjaya 01" class="app-logo"> 
+                RPH SMP MG01
+            </h1>
+            <p class="app-subtitle">Sistem Rekapitulasi Pembayaran Harian Siswa SMP MG01</p>
+        </header>
+
+        <main>
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" data-tab="pemasukan">Pemasukan</button>
+                <button class="tab-btn" data-tab="pengeluaran">Pengeluaran</button>
+            </div>
+
+            <!-- Pemasukan Tab -->
+            <div id="pemasukan" class="tab-content active">
+                <section class="form-section card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-plus-circle"></i> Tambah Pembayaran Baru
+                        </h2>
+                    </div>
+                    <form id="paymentForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tanggal">
+                                    <i class="fas fa-calendar-alt"></i> Tanggal
+                                </label>
+                                <input type="date" id="tanggal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="namaSiswa">
+                                    <i class="fas fa-user-graduate"></i> Nama Siswa
+                                </label>
+                                <input type="text" id="namaSiswa" list="siswaNames" placeholder="Masukkan nama siswa" required>
+                                <datalist id="siswaNames"></datalist>
+                            </div>
+                            <div class="form-group">
+                                <label for="kelas">
+                                    <i class="fas fa-users"></i> Kelas
+                                </label>
+                                <select id="kelas" required>
+                                    <option value="">Pilih Kelas</option>
+                                    <option value="VII">VII</option>
+                                    <option value="VIII">VIII</option>
+                                    <option value="IX">IX</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="keterangan">
+                                    <i class="fas fa-tag"></i> Keterangan
+                                </label>
+                                <select id="keterangan" required>
+                                    <option value="">Pilih Keterangan</option>
+                                    <option value="SPP">SPP</option>
+                                    <option value="UAT">UAT</option>
+                                    <option value="Pindahan">Pindahan</option>
+                                    <option value="Tunggakan">Tunggakan</option>
+                                    <option value="Adm.D.U">Adm.D.U</option>
+                                    <option value="Formulir">Formulir</option>
+                                    <option value="MPLS">MPLS</option>
+                                    <option value="Atribut">Atribut</option>
+                                    <option value="Batik">Batik</option>
+                                    <option value="Olga">Olga</option>
+                                    <option value="OSIS">OSIS</option>
+                                    <option value="LKS1">LKS1</option>
+                                    <option value="LKS2">LKS2</option>
+                                    <option value="Rapot">Rapot</option>
+                                    <option value="UTS1">UTS1</option>
+                                    <option value="UTS2">UTS2</option>
+                                    <option value="PAS1">PAS1</option>
+                                    <option value="PAS2">PAS2</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="jumlah">
+                                    <i class="fas fa-money-bill"></i> Jumlah (Rp)
+                                </label>
+                                <div class="input-with-icon">
+                                    <span class="currency-symbol">Rp</span>
+                                    <input type="number" id="jumlah" min="1000" step="1000" placeholder="Masukkan jumlah" required>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="catatan">
+                                    <i class="fas fa-sticky-note"></i> Catatan
+                                </label>
+                                <textarea id="catatan" rows="2" placeholder="Tambahkan catatan jika perlu"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Simpan Pembayaran
+                            </button>
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i> Reset Form
+                            </button>
+                        </div>
+                    </form>
+                </section>
+        
+                <div class="dashboard-grid">
+                    <section class="summary-section card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-chart-pie"></i> Ringkasan Pemasukan
+                            </h2>
+                        </div>
+                        <div class="summary-cards">
+                            <div class="summary-card total">
+                                <div class="summary-icon">
+                                    <i class="fas fa-wallet"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <h3>Total Pemasukan</h3>
+                                    <p id="totalPemasukan">Rp 0</p>
+                                </div>
+                            </div>
+                            <div class="summary-card today">
+                                <div class="summary-icon">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <h3>Hari Ini</h3>
+                                    <p id="todayPemasukan">Rp 0</p>
+                                </div>
+                            </div>
+                            <div class="summary-card students">
+                                <div class="summary-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="summary-content">
+                                    <h3>Total Siswa</h3>
+                                    <p id="totalSiswa">0</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section class="chart-section card">
+                        <div class="card-header">
+                            <h2 class="card-title">
+                                <i class="fas fa-chart-bar"></i> Grafik Pemasukan
+                            </h2>
+                            <div class="chart-controls">
+                                <select id="chartType">
+                                    <option value="bar">Batang</option>
+                                    <option value="pie">Pie</option>
+                                    <option value="line">Garis</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="paymentChart"></canvas>
+                        </div>
+                    </section>
+                </div>
+
+                <section class="table-section card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-list-alt"></i> Daftar Pembayaran
+                        </h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" onclick="exportToExcel('pemasukan')">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportToPdf('pemasukan')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-danger" onclick="resetAllData('pemasukan')">
+                                <i class="fas fa-trash"></i> Reset Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-controls">
+                        <div class="filter-group search-group">
+                            <label for="searchNama">Cari Nama</label>
+                            <div class="search-input">
+                                <input type="text" id="searchNama" placeholder="Ketik nama siswa...">
+                                <button type="button" class="search-btn"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterTanggal">Filter Tanggal</label>
+                            <input type="date" id="filterTanggal">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterKelas">Filter Kelas</label>
+                            <select id="filterKelas">
+                                <option value="">Semua</option>
+                                <option value="VII">VII</option>
+                                <option value="VIII">VIII</option>
+                                <option value="IX">IX</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterKeterangan">Filter Keterangan</label>
+                            <select id="filterKeterangan">
+                                <option value="">Semua</option>
+                                <option value="SPP">SPP</option>
+                                <option value="UAT">UAT</option>
+                                <option value="Pindahan">Pindahan</option>
+                                <option value="Tunggakan">Tunggakan</option>
+                                <option value="Adm.D.U">Adm.D.U</option>
+                                <option value="Formulir">Formulir</option>
+                                <option value="MPLS">MPLS</option>
+                                <option value="Atribut">Atribut</option>
+                                <option value="Batik">Batik</option>
+                                <option value="Olga">Olga</option>
+                                <option value="OSIS">OSIS</option>
+                                <option value="LKS1">LKS1</option>
+                                <option value="LKS2">LKS2</option>
+                                <option value="Rapot">Rapot</option>
+                                <option value="UTS1">UTS1</option>
+                                <option value="UTS2">UTS2</option>
+                                <option value="PAS1">PAS1</option>
+                                <option value="PAS2">PAS2</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <button id="resetFilters" class="btn btn-secondary">
+                                <i class="fas fa-filter-slash"></i> Reset Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-actions">
+                        <p class="table-info">Menampilkan <span id="showingCount">0</span> dari <span id="totalCount">0</span> data</p>
+                        <div class="pagination">
+                            <button id="prevPage" class="btn btn-secondary">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span>Halaman <span id="currentPage">1</span> dari <span id="totalPages">1</span></span>
+                            <button id="nextPage" class="btn btn-secondary">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="paymentTable">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th data-sortable="tanggal">Tanggal <i class="fas fa-sort"></i></th>
+                                    <th data-sortable="namaSiswa">Nama Siswa <i class="fas fa-sort"></i></th>
+                                    <th data-sortable="kelas">Kelas <i class="fas fa-sort"></i></th>
+                                    <th data-sortable="keterangan">Keterangan <i class="fas fa-sort"></i></th>
+                                    <th data-sortable="jumlah">Jumlah <i class="fas fa-sort"></i></th>
+                                    <th>Catatan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="rekap-kelas-section card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-table"></i> Rekap per Kelas
+                        </h2>
+                    </div>
+                    <div class="table-container">
+                        <table id="rekapKelasTable">
+                            <thead>
+                                <tr>
+                                    <th>Kelas</th>
+                                    <th>Jumlah Pembayaran</th>
+                                    <th>Total (Rp)</th>
+                                    <th>Detail</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rekapKelasTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Pengeluaran Tab -->
+            <div id="pengeluaran" class="tab-content">
+                <section class="form-section card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-minus-circle"></i> Tambah Pengeluaran Baru
+                        </h2>
+                    </div>
+                    <form id="expenseForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="expenseTanggal">
+                                    <i class="fas fa-calendar-alt"></i> Tanggal
+                                </label>
+                                <input type="date" id="expenseTanggal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseKeterangan">
+                                    <i class="fas fa-tag"></i> Keterangan Pengeluaran
+                                </label>
+                                <input type="text" id="expenseKeterangan" placeholder="Masukkan keterangan pengeluaran" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expenseJumlah">
+                                    <i class="fas fa-money-bill"></i> Jumlah (Rp)
+                                </label>
+                                <div class="input-with-icon">
+                                    <span class="currency-symbol">Rp</span>
+                                    <input type="number" id="expenseJumlah" min="1000" step="1000" placeholder="Masukkan jumlah" required>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="expenseCatatan">
+                                    <i class="fas fa-sticky-note"></i> Catatan
+                                </label>
+                                <textarea id="expenseCatatan" rows="2" placeholder="Tambahkan catatan jika perlu"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Simpan Pengeluaran
+                            </button>
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i> Reset Form
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="summary-section card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-chart-pie"></i> Ringkasan Pengeluaran
+                        </h2>
+                    </div>
+                    <div class="summary-cards">
+                        <div class="summary-card expense-total">
+                            <div class="summary-icon">
+                                <i class="fas fa-wallet"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h3>Total Pengeluaran</h3>
+                                <p id="totalPengeluaran">Rp 0</p>
+                            </div>
+                        </div>
+                        <div class="summary-card expense-today">
+                            <div class="summary-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h3>Hari Ini</h3>
+                                <p id="todayPengeluaran">Rp 0</p>
+                            </div>
+                        </div>
+                        <div class="summary-card balance">
+                            <div class="summary-icon">
+                                <i class="fas fa-balance-scale"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h3>Saldo Bersih</h3>
+                                <p id="saldoBersih">Rp 0</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="table-section card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-list-alt"></i> Daftar Pengeluaran
+                        </h2>
+                        <div class="action-buttons">
+                            <button class="btn btn-secondary" onclick="exportToExcel('pengeluaran')">
+                                <i class="fas fa-file-excel"></i> Excel
+                            </button>
+                            <button class="btn btn-secondary" onclick="exportToPdf('pengeluaran')">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn btn-danger" onclick="resetAllData('pengeluaran')">
+                                <i class="fas fa-trash"></i> Reset Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label for="expenseFilterTanggal">Filter Tanggal</label>
+                            <input type="date" id="expenseFilterTanggal">
+                        </div>
+                        <div class="filter-group search-group">
+                            <label for="expenseSearchKeterangan">Cari Keterangan</label>
+                            <div class="search-input">
+                                <input type="text" id="expenseSearchKeterangan" placeholder="Ketik keterangan...">
+                                <button type="button" class="search-btn"><i class="fas fa-search"></i></button>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <button id="expenseResetFilters" class="btn btn-secondary">
+                                <i class="fas fa-filter-slash"></i> Reset Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-actions">
+                        <p class="table-info">Menampilkan <span id="expenseShowingCount">0</span> dari <span id="expenseTotalCount">0</span> data</p>
+                        <div class="pagination">
+                            <button id="expensePrevPage" class="btn btn-secondary">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span>Halaman <span id="expenseCurrentPage">1</span> dari <span id="expenseTotalPages">1</span></span>
+                            <button id="expenseNextPage" class="btn btn-secondary">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="expenseTable">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th data-sortable="tanggal">Tanggal <i class="fas fa-sort"></i></th>
+                                    <th data-sortable="keterangan">Keterangan <i class="fas fa-sort"></i></th>
+                                    <th data-sortable="jumlah">Jumlah <i class="fas fa-sort"></i></th>
+                                    <th>Catatan</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenseTableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal untuk Detail -->
+    <div id="paymentDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detail Pembayaran</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="modalContent">
+            </div>
+        </div>
+    </div>
+
+    <div id="expenseDetailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Detail Pengeluaran</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body" id="expenseModalContent">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
